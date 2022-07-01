@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HibernateUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">employee-servlet-app</a> &gt; <a href="index.source.html" class="el_package">com.revature.util</a> &gt; <span class="el_source">HibernateUtil.java</span></div><h1>HibernateUtil.java</h1><pre class="source lang-java linenums">package com.revature.util;
+
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+/**
+ * This is the Hibernate Helper class
+ * which is to handle startup and access Hibernate's
+ * Session Factory to obtain a Session Object (connection to the DB).
+ */
+<span class="nc" id="L12">public class HibernateUtil {</span>
+	
+	private static Session ses; // this is kind of like the Connection Interface from the JDBC API
+<span class="nc" id="L15">	private static SessionFactory sf = new Configuration().configure(&quot;hibernate.cfg.xml&quot;).buildSessionFactory();</span>
+	
+	
+	/**
+	 * We will use SessionFactory Interface to create a configuration object which 
+	 * will call the .configure method to establish the connection to the DB based 
+	 * on the creds we supplied in the hibernate.cfg.xml file.
+	 */
+	public static Session getSession() { // similar to getConnection()
+		
+		// call on our SessionFactory to open a connection if there isn't one
+<span class="nc bnc" id="L26" title="All 2 branches missed.">		if (ses == null) {</span>
+			// open a session (a.k.a connection to the DB if there isn't one open already
+<span class="nc" id="L28">			ses = sf.openSession();</span>
+			
+		}
+<span class="nc" id="L31">		return ses; // if the session is not null, just return it</span>
+		
+	}
+	
+	public static void closeSes() {
+		/**
+		 * Ideally when we close a session it frees up that connection to the DB 
+		 * and returns is to the connection pool so that is can be used by another
+		 * thread or operation.
+		 */
+<span class="nc" id="L41">		ses.close();</span>
+		
+<span class="nc" id="L43">	}</span>
+	
+	
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

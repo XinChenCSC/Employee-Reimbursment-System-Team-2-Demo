@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EmployeeDao.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">employee-servlet-app</a> &gt; <a href="index.source.html" class="el_package">com.revature.dao</a> &gt; <span class="el_source">EmployeeDao.java</span></div><h1>EmployeeDao.java</h1><pre class="source lang-java linenums">package com.revature.dao;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.hibernate.HibernateException;
+import org.hibernate.Session;
+import org.hibernate.Transaction;
+
+import com.revature.models.Employee;
+
+import com.revature.util.HibernateUtil;
+
+// servlet -&gt; calls service --&gt; calls dao
+<span class="nc" id="L17">public class EmployeeDao {</span>
+
+	// CRUD methods
+
+	// Create (think that in the service layer we'll have a REGISTER()
+	public int insert(Employee emp) {
+
+		// grab the session object
+<span class="nc" id="L25">		Session ses = HibernateUtil.getSession();</span>
+		// begin a tx
+<span class="nc" id="L27">		Transaction tx = null;</span>
+		// capture the pk returned when the session method save() is called
+<span class="nc" id="L29">		int pk = 0;</span>
+		try {
+<span class="nc" id="L31">			tx = ses.beginTransaction();</span>
+<span class="nc" id="L32">			pk = (int) ses.save(emp);</span>
+<span class="nc" id="L33">			tx.commit();</span>
+<span class="nc" id="L34">		} catch (HibernateException e) {</span>
+<span class="nc bnc" id="L35" title="All 2 branches missed.">			if (tx != null)</span>
+<span class="nc" id="L36">				tx.rollback();</span>
+<span class="nc" id="L37">			e.printStackTrace();</span>
+
+<span class="nc" id="L39">		} </span>
+		
+
+		// return the pk
+
+<span class="nc" id="L44">		return pk;</span>
+
+	}
+
+	// Read
+	public List&lt;Employee&gt; findAll() {
+
+<span class="nc" id="L51">		Session ses = HibernateUtil.getSession();</span>
+<span class="nc" id="L52">		List&lt;Employee&gt; emps = new ArrayList&lt;Employee&gt;();</span>
+		try {
+<span class="nc" id="L54">			emps = ses.createQuery(&quot;from Employee&quot;, Employee.class).list();</span>
+<span class="nc" id="L55">		} catch (HibernateException e) {</span>
+<span class="nc" id="L56">			e.printStackTrace();</span>
+<span class="nc" id="L57">			return emps;</span>
+<span class="nc" id="L58">		} </span>
+<span class="nc" id="L59">		return emps;</span>
+	}
+	@Transactional
+	public Employee findEmployeeById(int ID) {
+		
+		
+	
+<span class="nc" id="L66">		Employee emp = new Employee();</span>
+
+<span class="nc" id="L68">		try(Session session = HibernateUtil.getSession()) {</span>
+		
+			
+<span class="nc" id="L71">			emp = session.get(Employee.class, ID);</span>
+<span class="nc bnc" id="L72" title="All 2 branches missed.">			emp = (emp == null) ? new Employee(): emp ;</span>
+<span class="nc" id="L73">		} catch (HibernateException e) {</span>
+		
+<span class="nc" id="L75">			e.printStackTrace();</span>
+<span class="nc" id="L76">		} </span>
+		
+<span class="nc" id="L78">		return emp;</span>
+	}
+
+	public boolean updateEmployee(Employee emp) {
+<span class="nc" id="L82">		Session session = HibernateUtil.getSession();</span>
+<span class="nc" id="L83">		Transaction tx = null;</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">		if (emp.getId() &lt; 0) {</span>
+<span class="nc" id="L85">			System.out.println(&quot;Employee not found in database&quot;);</span>
+<span class="nc" id="L86">			return false;</span>
+		} else {
+
+			try {
+<span class="nc" id="L90">				tx = session.beginTransaction();</span>
+<span class="nc" id="L91">				session.saveOrUpdate(emp);</span>
+<span class="nc" id="L92">				tx.commit();</span>
+<span class="nc" id="L93">				return true;</span>
+<span class="nc" id="L94">			} catch (HibernateException e) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">				if (tx != null)</span>
+<span class="nc" id="L96">					tx.rollback();</span>
+<span class="nc" id="L97">				e.printStackTrace();</span>
+<span class="nc" id="L98">				return false;</span>
+			} 
+		}
+
+	}
+
+	public boolean deleteEmployee(int id) {
+<span class="nc" id="L105">		Session session = HibernateUtil.getSession();</span>
+<span class="nc" id="L106">		Transaction tx = null;</span>
+
+<span class="nc bnc" id="L108" title="All 2 branches missed.">		if (id &lt; 0) {</span>
+<span class="nc" id="L109">			System.out.println(&quot;Employee not found in database&quot;);</span>
+<span class="nc" id="L110">			return false;</span>
+		} else {
+			try {
+<span class="nc" id="L113">				tx = session.beginTransaction();</span>
+<span class="nc" id="L114">				Employee target = session.get(Employee.class, id);</span>
+<span class="nc" id="L115">				session.delete(target);</span>
+<span class="nc" id="L116">				tx.commit();</span>
+<span class="nc" id="L117">				return true;</span>
+<span class="nc" id="L118">			} catch (HibernateException e) {</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">				if (tx != null)</span>
+<span class="nc" id="L120">					tx.rollback();</span>
+<span class="nc" id="L121">				e.printStackTrace();</span>
+<span class="nc" id="L122">				return false;</span>
+			} 
+		}
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

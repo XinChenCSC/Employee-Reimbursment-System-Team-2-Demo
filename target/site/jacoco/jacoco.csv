@@ -1,0 +1,16 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+employee-servlet-app,com.revature.web,FrontController,50,0,8,0,19,0,10,0,3,0
+employee-servlet-app,com.revature.web,RequestHelper,329,0,14,0,91,0,17,0,9,0
+employee-servlet-app,com.revature.dao,ReimbursementDao,165,0,10,0,64,0,12,0,7,0
+employee-servlet-app,com.revature.dao,Test,4,0,0,0,2,0,2,0,2,0
+employee-servlet-app,com.revature.dao,EmployeeDao,145,0,12,0,58,0,12,0,6,0
+employee-servlet-app,com.revature.models,Reimbursement,179,150,15,9,22,47,16,21,4,21
+employee-servlet-app,com.revature.models,Employee,87,155,9,11,4,48,11,19,2,18
+employee-servlet-app,com.revature.enums,Role,0,15,0,0,0,1,0,1,0,1
+employee-servlet-app,com.revature.enums,ReimbType,0,21,0,0,0,1,0,1,0,1
+employee-servlet-app,com.revature.enums,Status,0,21,0,0,0,1,0,1,0,1
+employee-servlet-app,com.revature.service,ManagerService,9,322,2,18,5,63,3,28,1,20
+employee-servlet-app,com.revature.service,ReimbursementService,0,20,0,0,0,6,0,4,0,4
+employee-servlet-app,com.revature.service,ManagerService.new Authenticator() {...},0,12,0,0,0,2,0,2,0,2
+employee-servlet-app,com.revature.service,EmployeeService,2,131,1,9,1,28,2,18,1,14
+employee-servlet-app,com.revature.util,HibernateUtil,21,0,2,0,7,0,5,0,4,0

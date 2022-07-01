@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ManagerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">employee-servlet-app</a> &gt; <a href="index.source.html" class="el_package">com.revature.service</a> &gt; <span class="el_source">ManagerService.java</span></div><h1>ManagerService.java</h1><pre class="source lang-java linenums">package com.revature.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import com.revature.dao.EmployeeDao;
+import com.revature.dao.ReimbursementDao;
+import com.revature.enums.Status;
+import com.revature.models.Employee;
+import com.revature.models.Reimbursement;
+
+public class ManagerService {
+
+	private EmployeeDao mdao;
+	private ReimbursementDao rdao;
+<span class="fc" id="L27">	public ManagerService(EmployeeDao mdao) {</span>
+
+<span class="fc" id="L29">		this.mdao = mdao;</span>
+	
+
+<span class="fc" id="L32">	}</span>
+<span class="fc" id="L33">	public ManagerService(ReimbursementDao rdao) {</span>
+
+	
+<span class="fc" id="L36">		this.rdao = rdao;</span>
+
+<span class="fc" id="L38">	}</span>
+	
+<span class="fc" id="L40">	public ManagerService(EmployeeDao mdao,ReimbursementDao rdao) {</span>
+
+<span class="fc" id="L42">		this.mdao = mdao;</span>
+<span class="fc" id="L43">		this.rdao = rdao;</span>
+
+<span class="fc" id="L45">	}</span>
+
+
+
+	public Employee confirmLogin(String username, String password) {
+
+		// let's stream through all the employees that are returned
+<span class="fc" id="L52">		Optional&lt;Employee&gt; possibleEmp = mdao.findAll().stream()</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">				.filter(e -&gt; (e.getUsername().equals(username) &amp;&amp; e.getPassword().equals(password))).findFirst();</span>
+
+		// IF the employee is present, return it, otherwise return empty Emp object
+		// (with id of 0)
+<span class="fc bfc" id="L57" title="All 2 branches covered.">		return (possibleEmp.isPresent() ? possibleEmp.get() : new Employee());</span>
+		// ideally you should optimize this and set up a custom exception to be returned
+	}
+
+	public List&lt;Employee&gt; getAll() {
+
+<span class="fc" id="L63">		return mdao.findAll();</span>
+
+	}
+
+	public int register(Employee manager) {
+<span class="fc" id="L68">		return mdao.insert(manager);</span>
+	}
+
+	// Use Case: A Manager can approve/deny pending reimbursement requests
+	// Use Case: An Employee receives an email when one of their reimbursement requests is resolved (optional)
+	public boolean updateReimbursementStatus(int id, Status status, String email) {
+
+<span class="fc" id="L75">		Reimbursement r = rdao.findReimbursementbyId(id);</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if (r == null)</span>
+<span class="nc" id="L77">			return false;</span>
+<span class="fc" id="L78">		r.setStatus(status);</span>
+<span class="pc bpc" id="L79" title="1 of 2 branches missed.">		if (!status.toString().equals(&quot;Pending&quot;)) {</span>
+<span class="fc" id="L80">			sendEmail(email);</span>
+		}
+		
+		
+<span class="fc" id="L84">		return rdao.updateReimbursement(r);</span>
+
+	}
+
+	// Use Case: A Manager can view all pending requests from all employees
+	public List&lt;Reimbursement&gt; getAllEmployeesPendingReimbursementRequest() {
+
+<span class="fc" id="L91">		List&lt;Reimbursement&gt; rts = rdao.findAll();</span>
+<span class="fc" id="L92">		rts = rts.stream().filter(rt -&gt; rt.getStatus().toString().equals(&quot;Pending&quot;)).collect(Collectors.toList());</span>
+		
+<span class="fc" id="L94">		List&lt;Integer&gt; emps = mdao.findAll().stream().filter(emp -&gt; emp.getRole().toString().equals(&quot;Employee&quot;))</span>
+<span class="fc" id="L95">				.map(emp -&gt; emp.getId()).collect(Collectors.toList());</span>
+<span class="fc" id="L96">		List&lt;Reimbursement&gt; res = new ArrayList&lt;Reimbursement&gt;();</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">		for(Reimbursement rt: rts) {</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">			if(emps.contains(rt.getAuthorId())) {</span>
+<span class="fc" id="L99">				res.add(rt);</span>
+<span class="fc" id="L100">		}}</span>
+<span class="fc" id="L101">		return res;</span>
+
+	}
+
+	// Use Case: A Manager can view images of the receipts from reimbursement
+	// requests (extra credit)
+	public boolean getImagesOfTheReceipts() {
+<span class="nc" id="L108">		return false;</span>
+	}
+
+	// Use Case: A Manager can view all resolved requests from all employees and see
+	// which manager resolved it
+	public List&lt;Reimbursement&gt; getAllEmployeeResolvedReimbursementRequest() {
+<span class="fc" id="L114">		List&lt;Reimbursement&gt; rts = rdao.findAll();</span>
+		
+<span class="fc bfc" id="L116" title="All 2 branches covered.">		rts = rts.stream().filter(rt -&gt; !rt.getStatus().toString().equals(&quot;Pending&quot;)).collect(Collectors.toList());</span>
+		
+<span class="fc" id="L118">		List&lt;Integer&gt; emps = mdao.findAll().stream().filter(emp -&gt; emp.getRole().toString().equals(&quot;Employee&quot;))</span>
+<span class="fc" id="L119">				.map(emp -&gt; emp.getId()).collect(Collectors.toList());</span>
+<span class="fc" id="L120">		List&lt;Reimbursement&gt; res = new ArrayList&lt;Reimbursement&gt;();</span>
+<span class="fc bfc" id="L121" title="All 2 branches covered.">		for(Reimbursement rt: rts) {</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">			if(emps.contains(rt.getAuthorId())) {</span>
+<span class="fc" id="L123">				res.add(rt);</span>
+<span class="fc" id="L124">		}}</span>
+<span class="fc" id="L125">		return res;</span>
+
+	
+
+	}
+
+	// Use Case: A Manager can view all Employees
+	public List&lt;Employee&gt; getAllEmployeesInfo() {
+
+<span class="fc" id="L134">		List&lt;Employee&gt; emps = mdao.findAll();</span>
+
+<span class="fc" id="L136">		return emps.stream().filter(emp -&gt; emp.getRole().toString().equals(&quot;Employee&quot;)).collect(Collectors.toList());</span>
+	}
+
+	// Use Case: A Manager can view reimbursement requests from a single Employee
+	public List&lt;Reimbursement&gt; getReimbursementRequestByEmployee(int id) {
+<span class="fc" id="L141">		return rdao.findReimbursementbyAuthorId(id);</span>
+
+	}
+	
+	public boolean sendEmail(String receiver) {
+		 // Recipient's email ID needs to be mentioned.
+<span class="fc" id="L147">        String to = receiver;</span>
+
+        // Sender's email ID needs to be mentioned
+<span class="fc" id="L150">        String from = &quot;ahhaahhahaha233@gmail.com&quot;;</span>
+
+        // Assuming you are sending email from through gmails smtp
+<span class="fc" id="L153">        String host = &quot;smtp.gmail.com&quot;;</span>
+
+        // Get system properties
+<span class="fc" id="L156">        Properties properties = System.getProperties();</span>
+
+        // Setup mail server
+<span class="fc" id="L159">        properties.put(&quot;mail.smtp.host&quot;, host);</span>
+<span class="fc" id="L160">        properties.put(&quot;mail.smtp.port&quot;, &quot;465&quot;);</span>
+<span class="fc" id="L161">        properties.put(&quot;mail.smtp.ssl.enable&quot;, &quot;true&quot;);</span>
+<span class="fc" id="L162">        properties.put(&quot;mail.smtp.auth&quot;, &quot;true&quot;);</span>
+
+        // Get the Session object.// and pass username and password
+<span class="fc" id="L165">        Session session = Session.getInstance(properties, new javax.mail.Authenticator() {</span>
+
+            protected PasswordAuthentication getPasswordAuthentication() {
+
+<span class="fc" id="L169">                return new PasswordAuthentication(&quot;ahhaahhahaha233@gmail.com&quot;, &quot;xjigivladkawavqo&quot;);</span>
+
+            }
+
+        });
+
+        // Used to debug SMTP issues
+<span class="fc" id="L176">        session.setDebug(true);</span>
+
+        try {
+            // Create a default MimeMessage object.
+<span class="fc" id="L180">            MimeMessage message = new MimeMessage(session);</span>
+
+            // Set From: header field of the header.
+<span class="fc" id="L183">            message.setFrom(new InternetAddress(from));</span>
+
+            // Set To: header field of the header.
+<span class="fc" id="L186">            message.addRecipient(Message.RecipientType.TO, new InternetAddress(to));</span>
+
+            // Set Subject: header field
+<span class="fc" id="L189">            message.setSubject(&quot;Status of reimbursement requests&quot;);</span>
+
+            // Now set the actual message
+<span class="fc" id="L192">            message.setText(&quot;Your reimbursement requests is resolved&quot;);</span>
+
+<span class="fc" id="L194">            System.out.println(&quot;sending...&quot;);</span>
+            // Send message
+<span class="fc" id="L196">            Transport.send(message);</span>
+<span class="fc" id="L197">            System.out.println(&quot;Sent message successfully....&quot;);</span>
+<span class="fc" id="L198">            return true;</span>
+<span class="nc" id="L199">        } catch (MessagingException mex) {</span>
+<span class="nc" id="L200">            mex.printStackTrace();</span>
+        }
+<span class="nc" id="L202">		return false;</span>
+	}
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
